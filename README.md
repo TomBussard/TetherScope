@@ -1,32 +1,15 @@
+# TetherScope
 
-# CryptoEconometrics
+When crypto volatility changes, does Tether's share of the market move next? We used weekly observations to examine the timing in both directions.
 
-## Description
-Analyse économétrique des dynamiques entre la volatilité du marché des crypto-monnaies et l'offre des stablecoins, notamment l'USDT (Tether). Ce projet explore si les stablecoins agissent comme refuge ou incitation au risque.
+## Method and result
 
-## Prérequis
-- **Logiciel** : R et RStudio
-- **Packages R** : `ggplot2`, `dplyr`, `readxl`, `forecast`, `vars`, `tseries`, etc.
-- **Données** : Téléchargez les données nécessaires depuis le lien fourni ou utilisez les fichiers fournis.
+We transformed the two series, checked their time-series properties and fitted a vector autoregression. In the reported sample, lagged changes in volatility helped predict changes in Tether dominance. The reverse test did not reach the 5 percent significance level. These tests measure predictive timing within the fitted model.
 
-## Installation et Exécution
-1. Ouvrez le fichier RMarkdown principal dans RStudio : `CryptoEconometrics.Rmd`.  
-2. Placez tous les fichiers de données nécessaires (comme `tether_market_dominance.xlsx`) dans le **même dossier** que le fichier RMarkdown.  
-3. Assurez-vous d'avoir tous les packages installés. Utilisez cette commande pour installer les packages manquants :  
-   ```R
-   install.packages(c("ggplot2", "dplyr", "readxl", "forecast", "vars", "tseries"))
-   ```
-3. Compilez le fichier en PDF depuis RStudio pour obtenir le rapport final.
+The [finished report](CryptoEconometrics.pdf) is the quickest way to see the figures and results. The [R Markdown notebook](CryptoEconometrics.Rmd) contains the tests and model code, and the [input workbook](tether_market_dominance.xlsx) is included.
 
-## Contenu du Projet
-- **Code Source** : Analyse économétrique complète en RMarkdown.
-- **Données** : 
-  - Fichier Excel : `tether_market_dominance.xlsx`.
-  - Rapports PDF : `CryptoEconometrics.pdf`.
+## Reproduce the report
 
-## Auteurs
-- **Bussard Tom**
-- **Odend’hal Charles**
+Open the notebook in RStudio, install the packages loaded in its setup section and knit it to PDF with a LaTeX installation. Keep the notebook, workbook and project image in the same directory.
 
-## Licence
-Ce projet est sous licence MIT.
+Developed by **Tom Bussard and Charles Odend'hal** at Université Paris Dauphine PSL.
