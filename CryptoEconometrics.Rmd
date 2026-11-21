@@ -2,7 +2,7 @@
 title: "TetherScope"
 subtitle: "Does crypto volatility lead changes in Tether's market share?"
 author: "Tom Bussard"
-date: "December 2024 | English portfolio edition"
+date: "2024"
 geometry: margin=0.85in
 output:
   pdf_document:
@@ -10,22 +10,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(readxl)
+source("R/data.R", encoding = "UTF-8")
 library(urca)
 library(vars)
 invisible(Sys.setlocale("LC_TIME", "C"))
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = "center")
 
-raw <- read_excel("tether_market_dominance.xlsx")
-raw$date <- as.Date(raw$timeClose)
-sample <- subset(raw, date >= as.Date("2020-01-01") & date < as.Date("2024-01-01"))
-sample <- sample[order(sample$date), ]
-stopifnot(nrow(sample) > 20, all(diff(as.integer(sample$date)) == 7),
-          all(is.finite(sample$crypto_volatility_index)), all(sample$crypto_volatility_index > 0),
-          all(is.finite(sample$global_market_dominance)), all(sample$global_market_dominance > 0))
-
-# The workbook stores market share as a fraction. A value of 0.03 means three percent.
-sample$share_pct <- 100 * sample$global_market_dominance
+sample <- read_weekly_market()
 vol <- ts(log(sample$crypto_volatility_index))
 share <- ts(log(sample$share_pct))
 d_vol <- diff(vol)
@@ -38,7 +29,7 @@ fmt <- function(x) sprintf("%.3f", x)
 
 USDT dominance is the market capitalisation of Tether divided by the total crypto market capitalisation. A change in that ratio can come from either side. I wanted to know whether the recent path of crypto volatility contains information about subsequent changes in dominance, and whether the reverse relationship also appears in the data.
 
-I matched Tether market share to the Crypto Volatility Index. The original study set its cutoff at the end of 2023. The workbook supplies **`r nrow(sample)` consecutive weekly observations** from **`r format(min(sample$date), "%d %B %Y")`** to **`r format(max(sample$date), "%d %B %Y")`** within that window.
+I matched Tether market share to the Crypto Volatility Index. I used a cutoff at the end of 2023. The workbook supplies **`r nrow(sample)` consecutive weekly observations** from **`r format(min(sample$date), "%d %B %Y")`** to **`r format(max(sample$date), "%d %B %Y")`** within that window.
 
 ```{r levels, fig.width=7, fig.height=4.2}
 par(mfrow = c(2, 1), mar = c(2.5, 4.2, 1.4, 1), las = 1, mgp = c(2.6, 0.6, 0))
@@ -54,7 +45,7 @@ The original workbook combines the [Crypto Volatility Index](https://www.investi
 
 ## Choosing the series to model
 
-The coursework used a first difference of log volatility and a second difference of log dominance. I retained these transformations so the main result can be reproduced. A second difference describes the change in the weekly growth rate of market share.
+I model the first difference of log volatility and the second difference of log dominance. The second difference describes how the weekly growth rate of market share changes. The diagnostics below show how the series behave at each stage.
 
 ```{r stationarity}
 diagnostics <- function(x) {
@@ -109,10 +100,10 @@ tests <- data.frame(
 knitr::kable(tests, digits = 4)
 ```
 
-AIC selects `r unname(lag_choice["AIC(n)"])` lags and Schwarz selects `r unname(lag_choice["SC(n)"])`. I used the three-lag specification with an intercept from the coursework. Past changes in volatility helped predict changes in Tether's market share growth at the five percent level. The reverse test gives p = `r fmt(share_leads$p.value)`. The tests describe predictive timing in this sample. They cannot identify why someone bought or sold USDT.
+AIC selects `r unname(lag_choice["AIC(n)"])` lags and Schwarz selects `r unname(lag_choice["SC(n)"])`. I used three lags and an intercept for the directional tests. Past changes in volatility helped predict changes in Tether's market share growth at the five percent level. The reverse test gives p = `r fmt(share_leads$p.value)`. The tests describe predictive timing in this sample.
 
 ```{r response, fig.width=6.8, fig.height=2.65}
-# Put volatility first, as in the coursework. This ordering matters for a same-week shock.
+# Put volatility first. This ordering determines the same-week response to its shock.
 response <- irf(model, impulse = "vol_change", response = "share_acceleration",
                 n.ahead = 12, ortho = TRUE, ci = 0.95, runs = 499, seed = 2024)
 horizon <- 0:12
