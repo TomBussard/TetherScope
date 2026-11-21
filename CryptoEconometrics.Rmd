@@ -1,7 +1,7 @@
 ---
 title: "TetherScope"
 subtitle: "Does crypto volatility lead changes in Tether's market share?"
-author: "Tom Bussard and Charles Odend'hal"
+author: "Tom Bussard"
 date: "December 2024 | English portfolio edition"
 geometry: margin=0.85in
 output:
@@ -36,9 +36,9 @@ fmt <- function(x) sprintf("%.3f", x)
 
 ## Two views of the same market
 
-USDT dominance is the market capitalisation of Tether divided by the total crypto market capitalisation. A change in that ratio can come from either side. We wanted to know whether the recent path of crypto volatility contains information about subsequent changes in dominance, and whether the reverse relationship also appears in the data.
+USDT dominance is the market capitalisation of Tether divided by the total crypto market capitalisation. A change in that ratio can come from either side. I wanted to know whether the recent path of crypto volatility contains information about subsequent changes in dominance, and whether the reverse relationship also appears in the data.
 
-We matched Tether market share to the Crypto Volatility Index. The original study set its cutoff at the end of 2023. The workbook supplies **`r nrow(sample)` consecutive weekly observations** from **`r format(min(sample$date), "%d %B %Y")`** to **`r format(max(sample$date), "%d %B %Y")`** within that window.
+I matched Tether market share to the Crypto Volatility Index. The original study set its cutoff at the end of 2023. The workbook supplies **`r nrow(sample)` consecutive weekly observations** from **`r format(min(sample$date), "%d %B %Y")`** to **`r format(max(sample$date), "%d %B %Y")`** within that window.
 
 ```{r levels, fig.width=7, fig.height=4.2}
 par(mfrow = c(2, 1), mar = c(2.5, 4.2, 1.4, 1), las = 1, mgp = c(2.6, 0.6, 0))
@@ -54,7 +54,7 @@ The original workbook combines the [Crypto Volatility Index](https://www.investi
 
 ## Choosing the series to model
 
-The coursework used a first difference of log volatility and a second difference of log dominance. We retained these transformations so the main result can be reproduced. A second difference describes the change in the weekly growth rate of market share.
+The coursework used a first difference of log volatility and a second difference of log dominance. I retained these transformations so the main result can be reproduced. A second difference describes the change in the weekly growth rate of market share.
 
 ```{r stationarity}
 diagnostics <- function(x) {
@@ -88,7 +88,7 @@ forecast_table <- data.frame(
 knitr::kable(forecast_table, digits = 4)
 ```
 
-Our MA(1) forecast is expressed in second differences of log dominance. The bands are 95 percent prediction intervals in the same units. The Ljung-Box test on the residuals at 20 lags gives p = `r fmt(ljung$p.value)`.
+The MA(1) forecast is expressed in second differences of log dominance. The bands are 95 percent prediction intervals in the same units. The Ljung-Box test on the residuals at 20 lags gives p = `r fmt(ljung$p.value)`.
 
 \newpage
 
@@ -109,7 +109,7 @@ tests <- data.frame(
 knitr::kable(tests, digits = 4)
 ```
 
-AIC selects `r unname(lag_choice["AIC(n)"])` lags and Schwarz selects `r unname(lag_choice["SC(n)"])`. We used the three-lag specification with an intercept from the coursework. Past changes in volatility helped predict changes in Tether's market share growth at the five percent level. The reverse test gives p = `r fmt(share_leads$p.value)`. The tests describe predictive timing in this sample. They cannot identify why someone bought or sold USDT.
+AIC selects `r unname(lag_choice["AIC(n)"])` lags and Schwarz selects `r unname(lag_choice["SC(n)"])`. I used the three-lag specification with an intercept from the coursework. Past changes in volatility helped predict changes in Tether's market share growth at the five percent level. The reverse test gives p = `r fmt(share_leads$p.value)`. The tests describe predictive timing in this sample. They cannot identify why someone bought or sold USDT.
 
 ```{r response, fig.width=6.8, fig.height=2.65}
 # Put volatility first, as in the coursework. This ordering matters for a same-week shock.
@@ -127,4 +127,4 @@ abline(h = 0, col = "grey55", lty = 2)
 lines(horizon, centre, lwd = 2, col = "#235E73")
 ```
 
-The shaded area shows the 95 percent bootstrap interval for a one-standard-deviation volatility shock. The French coursework report also examines local projections and an exploratory error-correction model. Both the report and its original source are available in this repository.
+The shaded area shows the 95 percent bootstrap interval for a one-standard-deviation volatility shock. Under this ordering, the response changes sign after the first week and then moves back towards zero. The band reflects estimation uncertainty in this sample.
